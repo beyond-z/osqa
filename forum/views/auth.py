@@ -8,7 +8,7 @@ from urlparse import urlparse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 from django.utils.encoding import smart_unicode
@@ -21,6 +21,7 @@ from writers import manage_pending_data
 from forum.actions import EmailValidationAction
 from forum.utils import html
 from forum.views.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from forum.modules import decorate
 from forum.forms import SimpleRegistrationForm, TemporaryLoginRequestForm, ChangePasswordForm, SetPasswordForm
 from forum.http_responses import HttpResponseUnauthorized
@@ -169,6 +170,7 @@ def external_register(request):
             user_ = User(username=form1.cleaned_data['username'], email=form1.cleaned_data['email'], real_name=form1.cleaned_data['real_name'])
             user_.email_isvalid = request.session.get('auth_validated_email', '') == form1.cleaned_data['email']
             user_.set_unusable_password()
+            user_.email_isvalid = True
 
             if User.objects.all().count() == 0:
                 user_.is_superuser = True
@@ -194,7 +196,7 @@ def external_register(request):
             del request.session['assoc_key']
             del request.session['auth_provider']
 
-            return login_and_forward(request, user_, message=_("A welcome email has been sent to your email address. "))
+            return login_and_forward(request, user_, message=_("Welcome to Braven Help! "))
     else:
         auth_provider = request.session.get('auth_provider', None)
         if not auth_provider:
@@ -448,3 +450,25 @@ def forward_suspended_user(request, user, show_private_msg=True):
 def signout(request):
     logout(request)
     return HttpResponseRedirect(djsettings.BZ_SITE_BASE)
+
+@csrf_exempt
+def create_user(request):
+    if request.method == 'POST' and request.POST['access_token'] == djsettings.BZ_QA_TOKEN:
+        assoc_key = request.POST['url']
+        username = request.POST['name']
+        real_name = request.POST['name']
+        email = request.POST['email']
+        auth_provider = 'openidurl'
+
+        user_ = User(username=username, email=email, real_name=real_name)
+        user_.set_unusable_password()
+        user_.email_isvalid = True
+        user_.save()
+        UserJoinsAction(user=user_, ip=request.META['REMOTE_ADDR']).save()
+
+        uassoc = AuthKeyUserAssociation(user=user_, key=assoc_key, provider=auth_provider)
+        uassoc.save()
+ 
+        return HttpResponse('OK')
+    else:
+        raise Http404()
