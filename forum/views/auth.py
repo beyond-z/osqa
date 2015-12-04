@@ -196,7 +196,7 @@ def external_register(request):
             del request.session['assoc_key']
             del request.session['auth_provider']
 
-            return login_and_forward(request, user_, message=_("Welcome to Braven Help! "))
+            return login_and_forward(request, user_, message=_("Welcome to Braven Help! When you ask a question, please check and see if it was already asked first."))
     else:
         auth_provider = request.session.get('auth_provider', None)
         if not auth_provider:
@@ -398,7 +398,9 @@ def login_and_forward(request, user, forward=None, message=None):
     UserLoginAction(user=user, ip=request.META['REMOTE_ADDR']).save()
 
     if message is None:
-        message = _("Welcome back %s, you are now logged in") % smart_unicode(user.username)
+        #message = _("Welcome back %s, you are now logged in") % smart_unicode(user.username)
+        message = _("Welcome to Braven Help! When you ask a question, please check and see if it was already asked first.")
+         
 
     messages.info(request, message)
 
