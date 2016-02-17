@@ -11,3 +11,5 @@ tmp/*
 
 osqa.wsgi
 settings_local.py
+
+forum/upfiles/*
