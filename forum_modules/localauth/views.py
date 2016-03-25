@@ -6,8 +6,16 @@ from django.utils.translation import ugettext as _
 from forms import ClassicRegisterForm
 from forum.views.auth import login_and_forward
 from forum.actions import UserJoinsAction
+from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse
 
 def register(request):
+    return HttpResponseRedirect(reverse('auth_signin'))
+    #raise NotImplementedError('We create accounts using the admin create user tool or through the Braven Portal integration.  Local registration is disabled.')
+
+    """ We create accounts through the admin or using our external creation integrated with the Portal.
+       COMMENTED OUT to prevent spambots from creating accounts (which we saw on Braven Help).
+
     if request.method == 'POST':
         form = ClassicRegisterForm(request.POST)
 
@@ -33,3 +41,4 @@ def register(request):
     return render_to_response('auth/complete.html', {
         'form1': form
         }, context_instance=RequestContext(request))
+    """
