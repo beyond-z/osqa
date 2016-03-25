@@ -131,6 +131,7 @@ core_urls = (
     url(r'^%s%s%s$' % (_('account/'), _('providers/'), _('add/')), app.auth.signin_page, name='user_add_external_provider'),
     url(r'^%s%s$' %(_('account/'), _('send-validation/')), app.auth.send_validation_email, name='send_validation_email'),
     url(r'^%s%s$' % (_('account/'), _('create-user/')), app.auth.create_user, name='auth_create_user'),
+    url(r'^%s%s$' % (_('account/'), _('change-user-email/')), app.auth.change_user_email, name='auth_change_user_email'),
     
     
     url(r'^%s$' % _('admin/'), app.admin.dashboard, name='admin_index'),
