@@ -9,3 +9,13 @@ Wiki - http://wiki.osqa.net
 
 # Braven Notes
 We setup a server running OSQA using the [Bitnami OSQA stack](https://bitnami.com/stack/osqa).  [Here](https://bitnami.com/stack/osqa/README.txt) is a readme with more technical info.
+
+## Custom Endpoints
+Create user:
+curl --data "access_token=<insert_BZ_QA_TOKEN>&name=<insert_name>&email=<insert_email>&url=<https://join.bebraven.org/openid/user/<insert_user_id>>" http://help.bebraven.org/account/create-user/
+
+Change email address for a user: 
+curl --data "access_token=<insert_BZ_QA_TOKEN>&old_email=<insert_current_email>&new_email=<insert_new_email>" http://help.bebraven.org/account/change-user-email/
+
+Disable notifications for a user: 
+curl --data "access_token=<insert_BZ_QA_TOKEN>&email=<insert_email>" http://help.bebraven.org/account/disable-notifications/

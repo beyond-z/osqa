@@ -132,7 +132,7 @@ core_urls = (
     url(r'^%s%s$' %(_('account/'), _('send-validation/')), app.auth.send_validation_email, name='send_validation_email'),
     url(r'^%s%s$' % (_('account/'), _('create-user/')), app.auth.create_user, name='auth_create_user'),
     url(r'^%s%s$' % (_('account/'), _('change-user-email/')), app.auth.change_user_email, name='auth_change_user_email'),
-    
+    url(r'^%s%s$' % (_('account/'), _('disable-notifications/')), app.auth.disable_notifications, name='auth_disable_notifications'),
     
     url(r'^%s$' % _('admin/'), app.admin.dashboard, name='admin_index'),
     url(r'^%s%s$' % (_('admin/'), _('switch_interface/')), app.admin.interface_switch, name='admin_switch_interface'),
