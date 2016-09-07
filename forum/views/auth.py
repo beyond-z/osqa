@@ -488,3 +488,19 @@ def change_user_email(request):
     else:
         raise Http404()
 
+@csrf_exempt
+def disable_notifications(request):
+    if request.method == 'POST' and request.POST['access_token'] == djsettings.BZ_QA_TOKEN:
+        targetemail = request.POST['email']
+
+        user_ = get_object_or_404(User, email=targetemail)
+        user_.subscription_settings.enable_notifications = False
+        user_.subscription_settings.new_question = 'n'
+        user_.subscription_settings.new_question_watched_tags = 'n'
+        user_.subscription_settings.subscribed_questions = 'n'
+        user_.subscription_settings.save()
+
+        return HttpResponse('OK')
+    else:
+        raise Http404()
+
