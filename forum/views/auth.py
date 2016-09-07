@@ -476,6 +476,17 @@ def create_user(request):
         raise Http404()
 
 @csrf_exempt
+def destroy_user(request):
+    if request.method == 'POST' and request.POST['access_token'] == djsettings.BZ_QA_TOKEN:
+        email = request.POST['email']
+
+        user_ = get_object_or_404(User, email=email)
+        user_.delete()
+        return HttpResponse('OK')
+    else:
+        raise Http404()
+
+@csrf_exempt
 def change_user_email(request):
     if request.method == 'POST' and request.POST['access_token'] == djsettings.BZ_QA_TOKEN:
         old_email = request.POST['old_email']
