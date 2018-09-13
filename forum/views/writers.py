@@ -22,6 +22,9 @@ from forum.http_responses import HttpResponseUnauthorized
 
 from vars import PENDING_SUBMISSION_SESSION_ATTR
 
+from forum.views.decorators import login_required
+from forum.modules import decorate
+
 @csrf_exempt
 def upload(request):#ajax upload file to a question or answer
     class FileTypeNotAllow(Exception):
@@ -70,6 +73,7 @@ def upload(request):#ajax upload file to a question or answer
 
     return HttpResponse(result, mimetype="application/xml")
 
+@decorate.withfn(login_required)
 def ask(request):
     form = None
 

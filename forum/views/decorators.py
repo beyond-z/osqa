@@ -15,7 +15,8 @@ from forum.settings import ONLINE_USERS
 
 def login_required(func, request, *args, **kwargs):
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('auth_signin'))
+        #return HttpResponseRedirect(reverse('auth_signin'))
+        return HttpResponse('<script>window.location.href = "' + reverse('auth_signin') + '";</script>')
     else:
         return func(request, *args, **kwargs)
 

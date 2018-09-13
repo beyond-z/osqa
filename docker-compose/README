@@ -1,0 +1,10 @@
+If you want to start just the OSQA server, you'll need to create a user to login as.  To do this,
+open forum_modules/localauth/views.py and uncomment the code that disables local registration.
+Then you can go to http://help.docker/admin/tools/createuser/ to create the user.
+Finally, you'll want to update the database to make them an admin.  
+docker-compose -f ./docker-compose-osqa.yml run --rm helpweb psql -h helpdb -U root -d osqa
+update auth_user set is_superuser = 't' where id = 2;
+update forum_user set email_isvalid = 't' where user_ptr_id = 2;
+
+Finally, restart the server:
+docker-compose -f docker-compose-osqa.yml restart

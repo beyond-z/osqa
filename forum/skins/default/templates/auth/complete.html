@@ -85,6 +85,9 @@
             <div class="submit-row"><input type="submit" class="submit" name="bnewaccount" id="bnewaccount" value="{% trans "create account" %}"/></div>
 		</form>
 	</div>
+	{% if form1.errors %}
+		<!-- An error occurred so we will not try to redirect as it may cause an endless loop. -->
+	{% else %}
 	<script>
 		var f = document.getElementById("submit-me-please");
 		var i = document.createElement("input");
@@ -95,6 +98,7 @@
 		f.submit();
                 document.body.style.visibility = 'hidden';
 	</script>
+        {% endif %}
     {% comment %}<!-- this form associates openID with an existing password-protected account, not yet functional -->
     {% if form2 %}
 	<div class="login" style="display:none">

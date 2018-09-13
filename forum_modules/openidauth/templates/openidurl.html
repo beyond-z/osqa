@@ -21,17 +21,17 @@
 <script src="{{ bz_url }}/openid/url_script"></script>
 <script>
 
-if(location.search != '?plain_login') {
+if(location.search != '?plain_login' ) {
  if(bz_current_user_openid_url) {
    var it = document.getElementById("openid_identifier");
    it.value = bz_current_user_openid_url;
    while(it && it.tagName != 'FORM')
      it = it.parentNode;
-   if(it) {
+   if(it && {{ allow_auto_redirect }}) {
      document.body.style.visibility = 'hidden';
      it.submit();
    }
- } else {
+ } else if({{allow_auto_redirect}}) {
    location.href = "{{ bz_url }}/openid/auto_login?back_to=" + encodeURIComponent(location.href);
  }
 }

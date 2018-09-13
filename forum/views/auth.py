@@ -8,7 +8,7 @@ from urlparse import urlparse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 from django.utils.encoding import smart_unicode
@@ -21,6 +21,7 @@ from writers import manage_pending_data
 from forum.actions import EmailValidationAction
 from forum.utils import html
 from forum.views.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from forum.modules import decorate
 from forum.forms import SimpleRegistrationForm, TemporaryLoginRequestForm, ChangePasswordForm, SetPasswordForm
 from forum.http_responses import HttpResponseUnauthorized
@@ -63,9 +64,14 @@ def signin_page(request):
     context for context in all_providers if context.mode == 'STACK_ITEM' and can_show(context)
     ], sort)
 
+    allow_auto_redirect = "true"
+    if request.user.is_authenticated():
+        allow_auto_redirect = "false"
+
     try:
         msg = request.session['auth_error']
         del request.session['auth_error']
+        allow_auto_redirect = "false"
     except:
         msg = None
 
@@ -74,6 +80,7 @@ def signin_page(request):
             {
             'msg': msg,
             'bz_url': djsettings.BZ_SITE_BASE,
+            'allow_auto_redirect': allow_auto_redirect,
             'all_providers': all_providers,
             'bigicon_providers': bigicon_providers,
             'top_stackitem_providers': top_stackitem_providers,
@@ -163,6 +170,7 @@ def external_register(request):
             user_ = User(username=form1.cleaned_data['username'], email=form1.cleaned_data['email'], real_name=form1.cleaned_data['real_name'])
             user_.email_isvalid = request.session.get('auth_validated_email', '') == form1.cleaned_data['email']
             user_.set_unusable_password()
+            user_.email_isvalid = True
 
             if User.objects.all().count() == 0:
                 user_.is_superuser = True
@@ -188,7 +196,7 @@ def external_register(request):
             del request.session['assoc_key']
             del request.session['auth_provider']
 
-            return login_and_forward(request, user_, message=_("A welcome email has been sent to your email address. "))
+            return login_and_forward(request, user_, message=_("Welcome to Braven Help! When you ask a question, please check and see if it was already asked first."))
     else:
         auth_provider = request.session.get('auth_provider', None)
         if not auth_provider:
@@ -390,7 +398,9 @@ def login_and_forward(request, user, forward=None, message=None):
     UserLoginAction(user=user, ip=request.META['REMOTE_ADDR']).save()
 
     if message is None:
-        message = _("Welcome back %s, you are now logged in") % smart_unicode(user.username)
+        #message = _("Welcome back %s, you are now logged in") % smart_unicode(user.username)
+        message = _("Welcome to Braven Help! When you ask a question, please check and see if it was already asked first.")
+         
 
     messages.info(request, message)
 
@@ -441,4 +451,67 @@ def forward_suspended_user(request, user, show_private_msg=True):
 @decorate.withfn(login_required)
 def signout(request):
     logout(request)
-    return HttpResponseRedirect(reverse('index'))
+    return HttpResponseRedirect(djsettings.BZ_SITE_BASE)
+
+@csrf_exempt
+def create_user(request):
+    if request.method == 'POST' and request.POST['access_token'] == djsettings.BZ_QA_TOKEN:
+        assoc_key = request.POST['url']
+        username = request.POST['name']
+        real_name = request.POST['name']
+        email = request.POST['email']
+        auth_provider = 'openidurl'
+
+        user_ = User(username=username, email=email, real_name=real_name)
+        user_.set_unusable_password()
+        user_.email_isvalid = True
+        user_.save()
+        UserJoinsAction(user=user_, ip=request.META['REMOTE_ADDR']).save()
+
+        uassoc = AuthKeyUserAssociation(user=user_, key=assoc_key, provider=auth_provider)
+        uassoc.save()
+ 
+        return HttpResponse('OK')
+    else:
+        raise Http404()
+
+@csrf_exempt
+def destroy_user(request):
+    if request.method == 'POST' and request.POST['access_token'] == djsettings.BZ_QA_TOKEN:
+        email = request.POST['email']
+
+        user_ = get_object_or_404(User, email=email)
+        user_.delete()
+        return HttpResponse('OK')
+    else:
+        raise Http404()
+
+@csrf_exempt
+def change_user_email(request):
+    if request.method == 'POST' and request.POST['access_token'] == djsettings.BZ_QA_TOKEN:
+        old_email = request.POST['old_email']
+        new_email = request.POST['new_email']
+
+        user_ = get_object_or_404(User, email=old_email)
+        user_.email = new_email
+        user_.save()
+        return HttpResponse('OK')
+    else:
+        raise Http404()
+
+@csrf_exempt
+def disable_notifications(request):
+    if request.method == 'POST' and request.POST['access_token'] == djsettings.BZ_QA_TOKEN:
+        targetemail = request.POST['email']
+
+        user_ = get_object_or_404(User, email=targetemail)
+        user_.subscription_settings.enable_notifications = False
+        user_.subscription_settings.new_question = 'n'
+        user_.subscription_settings.new_question_watched_tags = 'n'
+        user_.subscription_settings.subscribed_questions = 'n'
+        user_.subscription_settings.save()
+
+        return HttpResponse('OK')
+    else:
+        raise Http404()
+
