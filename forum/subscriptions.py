@@ -39,10 +39,11 @@ def question_posted(action, new):
         return
 
     subscribers = User.objects.filter(
-            Q(subscription_settings__enable_notifications=True, subscription_settings__new_question='i') |
-            (Q(subscription_settings__new_question_watched_tags='i') &
-              Q(marked_tags__name__in=question.tagnames.split(' ')) &
-              Q(tag_selections__reason='good'))
+            Q(course_id=question.author.course_id)|Q(course_id=1) &
+            (Q(subscription_settings__enable_notifications=True, subscription_settings__new_question='i') |
+              (Q(subscription_settings__new_question_watched_tags='i') &
+                Q(marked_tags__name__in=question.tagnames.split(' ')) &
+                Q(tag_selections__reason='good')))
     ).exclude(id=question.author.id).distinct()
 
     subscribers = filter_subscribers(subscribers)

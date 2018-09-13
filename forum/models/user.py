@@ -134,6 +134,8 @@ class User(BaseModel, DjangoUser):
     silver = models.PositiveIntegerField(default=0)
     bronze = models.PositiveIntegerField(default=0)
 
+    course_id = models.PositiveIntegerField(default=0)
+
     last_seen = models.DateTimeField(default=datetime.datetime.now)
     real_name = models.CharField(max_length=100, blank=True)
     website = models.URLField(max_length=200, blank=True)
