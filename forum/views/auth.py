@@ -465,6 +465,7 @@ def create_user(request):
         user_ = User(username=username, email=email, real_name=real_name)
         user_.set_unusable_password()
         user_.email_isvalid = True
+        user_.course_id = request.POST['course_id']
         user_.save()
         UserJoinsAction(user=user_, ip=request.META['REMOTE_ADDR']).save()
 
